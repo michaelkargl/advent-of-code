@@ -35,17 +35,14 @@ let rotateDial (position: int) (dialSize: int) (rotation: Rotation) : int =
     | Right -> (position + clicks) % dialSize
 
 let getPasscodeFromRotations (startDialPosition: int) (dialSize: int) (rotations: Rotation seq) : int =
-    let mutable currentPosition = startDialPosition
-    let mutable passcode = 0
-
-    for rotation in rotations do
-        printfn $"Current Position: %d{currentPosition}, Rotation: %A{rotation}"
-        currentPosition <- rotation |> rotateDial currentPosition dialSize
-
-        if currentPosition = 0 then
-            passcode <- passcode + 1
-
-    passcode
+    rotations
+    |> Seq.fold
+        (fun (currentPosition, passcode) rotation ->
+            let newPosition = rotation |> rotateDial currentPosition dialSize
+            let newPasscode = if newPosition = 0 then passcode + 1 else passcode
+            (newPosition, newPasscode))
+        (startDialPosition, 0)
+    |> snd
 
 getRotations "inputs/day1.1_rotations.txt"
 |> getPasscodeFromRotations 50 100
